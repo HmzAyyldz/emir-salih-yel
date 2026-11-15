@@ -1,0 +1,15 @@
+<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+html,body{margin:0;height:100%;background:#080d16;color:#abbace;font:14px sans-serif}*{box-sizing:border-box}#stage{height:calc(100% - 52px);position:relative;border:1px solid #314156;border-radius:8px;overflow:hidden}model-viewer{width:100%;height:100%;touch-action:pan-y}#fallback{width:100%;height:100%;border:0}#photo{width:100%;height:100%;object-fit:contain}footer{display:flex;align-items:center;justify-content:space-between;gap:12px;height:52px}button{min-height:40px;border:1px solid #547ba5;border-radius:4px;background:#17283d;color:#f3f6fb;padding:8px 12px;cursor:pointer}button:focus-visible{outline:2px solid #7cbcff}#message{font-size:13px}
+</style></head><body><div id="stage"><model-viewer id="model" camera-controls touch-action="pan-y" interaction-prompt="none" loading="lazy" reveal="auto" shadow-intensity="0" exposure="1" tabindex="0"></model-viewer></div><footer><span id="message" role="status"></span><button id="rotation" type="button"></button></footer>
+<script type="module">__VIEWER_LIBRARY__</script>
+<script>
+const config=__CONFIG__;const model=document.getElementById('model'),button=document.getElementById('rotation'),message=document.getElementById('message');
+let finished=false,started=false;const reduce=matchMedia('(prefers-reduced-motion: reduce)');
+model.alt=config.name;message.textContent=config.instructions;button.textContent=config.rotate;
+function fallback(){if(finished)return;finished=true;model.remove();button.hidden=true;message.textContent=config.fallbackLabel;const stage=document.getElementById('stage');if(config.fallbackHTML){const frame=document.createElement('iframe');frame.id='fallback';frame.title=config.name;frame.srcdoc=config.fallbackHTML;stage.append(frame)}else{const image=document.createElement('img');image.id='photo';image.src=config.poster;image.alt=config.name;stage.append(image)}}
+function start(){if(started)return;started=true;model.src=config.model;setTimeout(fallback,8000)}
+model.addEventListener('error',fallback);model.addEventListener('load',()=>{if(finished)return;finished=true;message.textContent=config.loadedLabel+' · '+config.instructions});
+button.onclick=()=>{model.autoRotate=!model.autoRotate;button.textContent=model.autoRotate?config.pause:config.rotate;button.setAttribute('aria-pressed',String(model.autoRotate))};
+reduce.addEventListener('change',()=>{if(reduce.matches){model.autoRotate=false;button.textContent=config.rotate}});
+new IntersectionObserver((entries,observer)=>{if(entries.some(e=>e.isIntersecting)){observer.disconnect();start()}},{rootMargin:'100px'}).observe(model);
+</script></body></html>
